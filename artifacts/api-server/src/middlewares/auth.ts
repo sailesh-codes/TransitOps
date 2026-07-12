@@ -54,6 +54,12 @@ export async function requireAuth(
             .where(eq(usersTable.clerkUserId, userId))
             .limit(1)
         )[0];
+
+      if (!localUser) {
+        throw new Error(
+          `Failed to provision local user for Clerk id ${userId}`,
+        );
+      }
     }
 
     req.localUser = localUser;

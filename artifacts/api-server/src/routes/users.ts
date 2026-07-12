@@ -19,7 +19,7 @@ function serializeUser(u: {
   email: string;
   name: string;
   role: string | null;
-  createdAt: Date;
+  createdAt: Date | string;
 }) {
   return {
     id: u.id,
@@ -27,7 +27,10 @@ function serializeUser(u: {
     email: u.email,
     name: u.name,
     role: u.role,
-    createdAt: u.createdAt.toISOString(),
+    createdAt:
+      u.createdAt instanceof Date
+        ? u.createdAt.toISOString()
+        : new Date(u.createdAt).toISOString(),
   };
 }
 

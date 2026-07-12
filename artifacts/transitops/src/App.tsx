@@ -28,9 +28,14 @@ const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const isDevelopmentWithoutClerk =
   !rawClerkPubKey || rawClerkPubKey === 'pk_test_dummy_key_for_development';
-const clerkPubKey = isDevelopmentWithoutClerk
-  ? null
-  : publishableKeyFromHost(window.location.hostname, rawClerkPubKey);
+let clerkPubKey: string | null = null;
+if (!isDevelopmentWithoutClerk) {
+  try {
+    clerkPubKey = publishableKeyFromHost(window.location.hostname, rawClerkPubKey) || rawClerkPubKey || null;
+  } catch (e) {
+    clerkPubKey = rawClerkPubKey || null;
+  }
+}
 
 function stripBase(path: string): string {
   return basePath && path.startsWith(basePath)

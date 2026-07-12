@@ -19,12 +19,24 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 interface LayoutProps {
   children: React.ReactNode;
+  localMode?: boolean;
 }
 
-export default function Layout({ children }: LayoutProps) {
-  const { data: user } = useGetCurrentUser();
+type LayoutUser = {
+  name?: string | null;
+  email?: string | null;
+  role?: string | null;
+};
+
+function LayoutShell({
+  children,
+  user,
+  onSignOut,
+}: LayoutProps & {
+  user?: LayoutUser | null;
+  onSignOut: () => void;
+}) {
   const [location] = useLocation();
-  const { signOut } = useClerk();
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -36,10 +48,6 @@ export default function Layout({ children }: LayoutProps) {
     { name: "Reports", href: "/reports", icon: BarChart3 },
     ...(user?.role === "fleet_manager" ? [{ name: "Team", href: "/team", icon: ShieldCheck }] : []),
   ];
-
-  const handleSignOut = () => {
-    signOut({ redirectUrl: import.meta.env.BASE_URL.replace(/\/$/, "") || "/" });
-  };
 
   const NavContent = () => (
     <div className="flex h-full flex-col gap-4">
@@ -74,7 +82,7 @@ export default function Layout({ children }: LayoutProps) {
             <span className="text-sm font-medium">{user?.name || user?.email}</span>
             <span className="text-xs text-muted-foreground uppercase font-mono">{user?.role?.replace('_', ' ') || 'No Role'}</span>
           </div>
-          <Button variant="ghost" size="icon" onClick={handleSignOut} title="Sign Out">
+          <Button variant="ghost" size="icon" onClick={onSignOut} title="Sign Out">
             <LogOut className="h-4 w-4" />
             <span className="sr-only">Sign Out</span>
           </Button>
@@ -108,5 +116,45 @@ export default function Layout({ children }: LayoutProps) {
         </main>
       </div>
     </div>
+  );
+}
+
+function ClerkLayout({ children }: LayoutProps) {
+  const { data: user } = useGetCurrentUser();
+  const { signOut } = useClerk();
+
+  const handleSignOut = () => {
+    signOut({ redirectUrl: import.meta.env.BASE_URL.replace(/\/$/, "") || "/" });
+  };
+
+  return (
+    <LayoutShell user={user} onSignOut={handleSignOut}>
+      {children}
+    </LayoutShell>
+  );
+}
+
+function LocalLayout({ children }: LayoutProps) {
+  const [, setLocation] = useLocation();
+
+  return (
+    <LayoutShell
+      user={{
+        name: "Local Operator",
+        email: "local@transitops.dev",
+        role: "fleet_manager",
+      }}
+      onSignOut={() => setLocation("/")}
+    >
+      {children}
+    </LayoutShell>
+  );
+}
+
+export default function Layout({ children, localMode = false }: LayoutProps) {
+  return localMode ? (
+    <LocalLayout>{children}</LocalLayout>
+  ) : (
+    <ClerkLayout>{children}</ClerkLayout>
   );
 }

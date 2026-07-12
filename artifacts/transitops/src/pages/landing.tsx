@@ -1,16 +1,20 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 
-export default function Landing() {
+type LandingProps = {
+  authHref?: string;
+};
+
+export default function Landing({ authHref = "/sign-in" }: LandingProps) {
   return (
     <div className="flex flex-col min-h-[100dvh] bg-background font-sans text-foreground">
       <header className="px-6 h-16 flex items-center border-b justify-between shrink-0">
         <div className="font-bold text-xl tracking-tight text-primary">TransitOps</div>
         <div className="flex items-center gap-4">
-          <Link href="/sign-in">
+          <Link href={authHref}>
             <Button variant="ghost" className="font-medium">Sign In</Button>
           </Link>
-          <Link href="/sign-up">
+          <Link href={authHref}>
             <Button className="font-medium">Get Started</Button>
           </Link>
         </div>
@@ -26,10 +30,10 @@ export default function Landing() {
               Total visibility over your fleet. Track vehicles, manage drivers, dispatch trips, and monitor expenses with uncompromising precision.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/sign-up">
+              <Link href={authHref}>
                 <Button size="lg" className="h-12 px-8 text-base font-semibold">Start Operations</Button>
               </Link>
-              <Link href="/sign-in">
+              <Link href={authHref}>
                 <Button variant="outline" size="lg" className="h-12 px-8 text-base font-semibold">Sign In to Dashboard</Button>
               </Link>
             </div>

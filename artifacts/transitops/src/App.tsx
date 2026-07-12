@@ -162,12 +162,20 @@ function ClerkProviderWithRoutes() {
 
 function App() {
   if (isDevelopmentWithoutClerk) {
+    const LocalLanding = () => <Landing authHref="/dashboard" />;
+
     return (
       <TooltipProvider>
         <WouterRouter base={basePath}>
           <QueryClientProvider client={queryClient}>
             <Switch>
-              <Route path="/" component={Landing} />
+              <Route path="/" component={LocalLanding} />
+              <Route path="/sign-in/*?">
+                <Redirect to="/dashboard" />
+              </Route>
+              <Route path="/sign-up/*?">
+                <Redirect to="/dashboard" />
+              </Route>
               <Route path="/dashboard" component={() => <Layout><RoleSelector /><Dashboard /></Layout>} />
               <Route path="/vehicles" component={() => <Layout><RoleSelector /><Vehicles /></Layout>} />
               <Route path="/drivers" component={() => <Layout><RoleSelector /><Drivers /></Layout>} />

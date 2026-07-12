@@ -74,6 +74,12 @@ app.use(
     const message = err instanceof Error ? err.message : String(err);
     const stack = err instanceof Error ? err.stack : undefined;
     logger.error({ err }, "Unhandled error in request");
+    
+    // TEMPORARY: Write error to a file so we can read it
+    import("node:fs").then(fs => {
+      fs.appendFileSync("c:/Users/NIKELESH/OneDrive/Documents/TransitOps/artifacts/api-server/error.log", JSON.stringify({ message, stack }) + "\\n");
+    });
+
     res.status(500).json({
       error: "Internal Server Error",
       message,

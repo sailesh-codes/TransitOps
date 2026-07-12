@@ -4,6 +4,7 @@ import {
   mysqlTable,
   text,
   timestamp,
+  datetime,
 } from "drizzle-orm/mysql-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -24,20 +25,21 @@ export const maintenanceLogsTable = mysqlTable("maintenance_logs", {
   startedAt: timestamp("started_at")
     .notNull()
     .defaultNow(),
-  closedAt: timestamp("closed_at"),
+  closedAt: datetime("closed_at"),
   createdAt: timestamp("created_at")
     .notNull()
     .defaultNow(),
 });
 
-export const insertMaintenanceLogSchema = createInsertSchema(
-  maintenanceLogsTable,
-).omit({
-  id: true,
-  createdAt: true,
-  status: true,
-  startedAt: true,
-  closedAt: true,
+export const insertMaintenanceLogSchema = z.object({
+  vehicleId: z.number(),
+  description: z.string(),
+  cost: z.number(),
 });
-export type InsertMaintenanceLog = z.infer<typeof insertMaintenanceLogSchema>;
+
+export type InsertMaintenanceLog = {
+  vehicleId: number;
+  description: string;
+  cost: number;
+};
 export type MaintenanceLog = typeof maintenanceLogsTable.$inferSelect;

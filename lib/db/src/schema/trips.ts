@@ -4,6 +4,7 @@ import {
   mysqlTable,
   text,
   timestamp,
+  datetime,
 } from "drizzle-orm/mysql-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -38,20 +39,26 @@ export const tripsTable = mysqlTable("trips", {
   createdAt: timestamp("created_at")
     .notNull()
     .defaultNow(),
-  dispatchedAt: timestamp("dispatched_at"),
-  completedAt: timestamp("completed_at"),
-  cancelledAt: timestamp("cancelled_at"),
+  dispatchedAt: datetime("dispatched_at"),
+  completedAt: datetime("completed_at"),
+  cancelledAt: datetime("cancelled_at"),
 });
 
-export const insertTripSchema = createInsertSchema(tripsTable).omit({
-  id: true,
-  createdAt: true,
-  status: true,
-  actualDistance: true,
-  fuelConsumed: true,
-  dispatchedAt: true,
-  completedAt: true,
-  cancelledAt: true,
+export const insertTripSchema = z.object({
+  source: z.string(),
+  destination: z.string(),
+  vehicleId: z.number(),
+  driverId: z.number(),
+  cargoWeight: z.number(),
+  plannedDistance: z.number(),
 });
-export type InsertTrip = z.infer<typeof insertTripSchema>;
+
+export type InsertTrip = {
+  source: string;
+  destination: string;
+  vehicleId: number;
+  driverId: number;
+  cargoWeight: number;
+  plannedDistance: number;
+};
 export type Trip = typeof tripsTable.$inferSelect;

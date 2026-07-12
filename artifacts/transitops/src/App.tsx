@@ -16,8 +16,10 @@ import Maintenance from '@/pages/maintenance';
 import FuelExpenses from '@/pages/fuel-expenses';
 import Reports from '@/pages/reports';
 import Team from '@/pages/team';
+import Profile from '@/pages/profile';
+import Onboarding from '@/pages/onboarding';
 import Layout from '@/components/layout';
-import RoleSelector from '@/components/role-selector';
+import { useGetCurrentUser } from '@workspace/api-client-react';
 
 const queryClient = new QueryClient();
 
@@ -100,7 +102,7 @@ function HomeRedirect() {
   return (
     <>
       <Show when="signed-in">
-        <Redirect to="/dashboard" />
+        <SignedInHomeRedirect />
       </Show>
       <Show when="signed-out">
         <Landing />
@@ -109,20 +111,51 @@ function HomeRedirect() {
   );
 }
 
+// Once a user is signed in, send them to onboarding if they haven't picked
+// a role yet, otherwise to the dashboard.
+function SignedInHomeRedirect() {
+  const { data: user, isLoading } = useGetCurrentUser();
+  if (isLoading) return null;
+  if (!user?.role) return <Redirect to="/onboarding" />;
+  return <Redirect to="/dashboard" />;
+}
+
+// Onboarding is for signed-in users without a role. Send signed-out users
+// back to the landing page; once a role is set, push to the dashboard.
+function OnboardingRoute() {
+  const { data: user, isLoading } = useGetCurrentUser();
+  if (isLoading) return null;
+  if (user?.role) return <Redirect to="/dashboard" />;
+  return (
+    <Show when="signed-in">
+      <Onboarding />
+    </Show>
+  );
+}
+
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   return (
     <>
       <Show when="signed-in">
-        <Layout>
-          <RoleSelector />
-          <Component />
-        </Layout>
+        <RoleGate>
+          <Layout>
+            <Component />
+          </Layout>
+        </RoleGate>
       </Show>
       <Show when="signed-out">
         <Redirect to="/" />
       </Show>
     </>
   );
+}
+
+// Inside a signed-in area, route users without a role to onboarding.
+function RoleGate({ children }: { children: React.ReactNode }) {
+  const { data: user, isLoading } = useGetCurrentUser();
+  if (isLoading) return null;
+  if (!user?.role) return <Redirect to="/onboarding" />;
+  return <>{children}</>;
 }
 
 function ClerkProviderWithRoutes() {
@@ -145,6 +178,7 @@ function ClerkProviderWithRoutes() {
           <Route path="/" component={HomeRedirect} />
           <Route path="/sign-in/*?" component={SignInPage} />
           <Route path="/sign-up/*?" component={SignUpPage} />
+          <Route path="/onboarding" component={OnboardingRoute} />
           <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} />} />
           <Route path="/vehicles" component={() => <ProtectedRoute component={Vehicles} />} />
           <Route path="/drivers" component={() => <ProtectedRoute component={Drivers} />} />
@@ -153,6 +187,7 @@ function ClerkProviderWithRoutes() {
           <Route path="/fuel-expenses" component={() => <ProtectedRoute component={FuelExpenses} />} />
           <Route path="/reports" component={() => <ProtectedRoute component={Reports} />} />
           <Route path="/team" component={() => <ProtectedRoute component={Team} />} />
+          <Route path="/profile" component={() => <ProtectedRoute component={Profile} />} />
           <Route component={NotFound} />
         </Switch>
       </QueryClientProvider>
@@ -176,14 +211,15 @@ function App() {
               <Route path="/sign-up/*?">
                 <Redirect to="/dashboard" />
               </Route>
-              <Route path="/dashboard" component={() => <Layout><RoleSelector /><Dashboard /></Layout>} />
-              <Route path="/vehicles" component={() => <Layout><RoleSelector /><Vehicles /></Layout>} />
-              <Route path="/drivers" component={() => <Layout><RoleSelector /><Drivers /></Layout>} />
-              <Route path="/trips" component={() => <Layout><RoleSelector /><Trips /></Layout>} />
-              <Route path="/maintenance" component={() => <Layout><RoleSelector /><Maintenance /></Layout>} />
-              <Route path="/fuel-expenses" component={() => <Layout><RoleSelector /><FuelExpenses /></Layout>} />
-              <Route path="/reports" component={() => <Layout><RoleSelector /><Reports /></Layout>} />
-              <Route path="/team" component={() => <Layout><RoleSelector /><Team /></Layout>} />
+              <Route path="/dashboard" component={() => <Layout localMode><Dashboard /></Layout>} />
+              <Route path="/vehicles" component={() => <Layout localMode><Vehicles /></Layout>} />
+              <Route path="/drivers" component={() => <Layout localMode><Drivers /></Layout>} />
+              <Route path="/trips" component={() => <Layout localMode><Trips /></Layout>} />
+              <Route path="/maintenance" component={() => <Layout localMode><Maintenance /></Layout>} />
+              <Route path="/fuel-expenses" component={() => <Layout localMode><FuelExpenses /></Layout>} />
+              <Route path="/reports" component={() => <Layout localMode><Reports /></Layout>} />
+              <Route path="/team" component={() => <Layout localMode><Team /></Layout>} />
+              <Route path="/profile" component={() => <Layout localMode><Profile /></Layout>} />
               <Route component={NotFound} />
             </Switch>
           </QueryClientProvider>

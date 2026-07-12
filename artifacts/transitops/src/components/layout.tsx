@@ -1,17 +1,18 @@
 import { useGetCurrentUser } from "@workspace/api-client-react";
 import { Link, useLocation } from "wouter";
 import { useClerk } from "@clerk/react";
-import { 
-  LayoutDashboard, 
-  Truck, 
-  Users, 
-  Map, 
-  Wrench, 
-  Droplet, 
-  BarChart3, 
+import {
+  LayoutDashboard,
+  Truck,
+  Users,
+  Map,
+  Wrench,
+  Droplet,
+  BarChart3,
   Settings,
   LogOut,
   ShieldCheck,
+  UserCircle,
   Menu
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -78,14 +79,36 @@ function LayoutShell({
       </div>
       <div className="mt-auto border-t p-4">
         <div className="flex items-center justify-between">
-          <div className="flex flex-col">
-            <span className="text-sm font-medium">{user?.name || user?.email}</span>
-            <span className="text-xs text-muted-foreground uppercase font-mono">{user?.role?.replace('_', ' ') || 'No Role'}</span>
+          <Link
+            href="/profile"
+            className={`flex flex-col rounded-md px-1 py-0.5 -mx-1 transition-colors hover:bg-muted ${
+              location === "/profile" ? "bg-muted" : ""
+            }`}
+            title="Open your profile"
+          >
+            <span className="text-sm font-medium leading-tight">
+              {user?.name || user?.email}
+            </span>
+            <span className="text-xs text-muted-foreground uppercase font-mono leading-tight">
+              {user?.role?.replace('_', ' ') || 'No Role'}
+            </span>
+          </Link>
+          <div className="flex items-center gap-1">
+            <Link href="/profile">
+              <Button
+                variant="ghost"
+                size="icon"
+                title="Profile"
+                aria-label="Profile"
+              >
+                <UserCircle className="h-4 w-4" />
+              </Button>
+            </Link>
+            <Button variant="ghost" size="icon" onClick={onSignOut} title="Sign Out">
+              <LogOut className="h-4 w-4" />
+              <span className="sr-only">Sign Out</span>
+            </Button>
           </div>
-          <Button variant="ghost" size="icon" onClick={onSignOut} title="Sign Out">
-            <LogOut className="h-4 w-4" />
-            <span className="sr-only">Sign Out</span>
-          </Button>
         </div>
       </div>
     </div>

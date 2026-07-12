@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { and, eq, ilike, or } from "drizzle-orm";
+import { and, eq, like, or } from "drizzle-orm";
 import { db, vehiclesTable, type Vehicle } from "@workspace/db";
 import {
   CreateVehicleBody,
@@ -41,8 +41,8 @@ router.get("/vehicles", requireAuth, async (req, res) => {
   if (search) {
     conditions.push(
       or(
-        ilike(vehiclesTable.name, `%${search}%`),
-        ilike(vehiclesTable.registrationNumber, `%${search}%`),
+        like(vehiclesTable.name, `%${search}%`),
+        like(vehiclesTable.registrationNumber, `%${search}%`),
       ),
     );
   }
@@ -66,7 +66,7 @@ router.post("/vehicles", requireAuth, async (req, res) => {
     return;
   }
 
-  const [created] = await db
+  const [{ id }] = await db
     .insert(vehiclesTable)
     .values({
       registrationNumber: body.registrationNumber,
@@ -77,7 +77,12 @@ router.post("/vehicles", requireAuth, async (req, res) => {
       acquisitionCost: String(body.acquisitionCost),
       region: body.region,
     })
-    .returning();
+    .$returningId();
+  const [created] = await db
+    .select()
+    .from(vehiclesTable)
+    .where(eq(vehiclesTable.id, id))
+    .limit(1);
   res.status(201).json(CreateVehicleResponse.parse(serialize(created)));
 });
 
@@ -123,11 +128,15 @@ router.patch("/vehicles/:id", requireAuth, async (req, res) => {
   if (body.region !== undefined) values.region = body.region;
   if (body.status !== undefined) values.status = body.status;
 
-  const [updated] = await db
+  await db
     .update(vehiclesTable)
     .set(values)
+    .where(eq(vehiclesTable.id, id));
+  const [updated] = await db
+    .select()
+    .from(vehiclesTable)
     .where(eq(vehiclesTable.id, id))
-    .returning();
+    .limit(1);
   if (!updated) {
     res.status(404).json({ error: "Vehicle not found" });
     return;
@@ -137,13 +146,17 @@ router.patch("/vehicles/:id", requireAuth, async (req, res) => {
 
 router.delete("/vehicles/:id", requireAuth, async (req, res) => {
   const [deleted] = await db
-    .delete(vehiclesTable)
+    .select()
+    .from(vehiclesTable)
     .where(eq(vehiclesTable.id, Number(req.params.id)))
-    .returning();
+    .limit(1);
   if (!deleted) {
     res.status(404).json({ error: "Vehicle not found" });
     return;
   }
+  await db
+    .delete(vehiclesTable)
+    .where(eq(vehiclesTable.id, Number(req.params.id)));
   res.status(204).end();
 });
 

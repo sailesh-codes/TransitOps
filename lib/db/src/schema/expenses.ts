@@ -1,12 +1,11 @@
 import {
   date,
-  integer,
-  numeric,
-  pgTable,
-  serial,
+  int,
+  decimal,
+  mysqlTable,
   text,
   timestamp,
-} from "drizzle-orm/pg-core";
+} from "drizzle-orm/mysql-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { vehiclesTable } from "./vehicles";
@@ -18,16 +17,16 @@ export const expenseCategories = [
   "Other",
 ] as const;
 
-export const expensesTable = pgTable("expenses", {
-  id: serial("id").primaryKey(),
-  vehicleId: integer("vehicle_id")
+export const expensesTable = mysqlTable("expenses", {
+  id: int("id").primaryKey().autoincrement(),
+  vehicleId: int("vehicle_id")
     .notNull()
     .references(() => vehiclesTable.id),
   category: text("category", { enum: expenseCategories }).notNull(),
-  amount: numeric("amount", { precision: 10, scale: 2 }).notNull(),
-  date: date("date", { mode: "string" }).notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  date: date("date").notNull(),
   description: text("description").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
+  createdAt: timestamp("created_at")
     .notNull()
     .defaultNow(),
 });

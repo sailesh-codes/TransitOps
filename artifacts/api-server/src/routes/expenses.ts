@@ -10,10 +10,6 @@ import { requireAuth } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
-function toDateOnly(d: Date): string {
-  return d.toISOString().slice(0, 10);
-}
-
 function serialize(e: Expense) {
   return {
     id: e.id,
@@ -40,28 +36,37 @@ router.get("/expenses", requireAuth, async (req, res) => {
 
 router.post("/expenses", requireAuth, async (req, res) => {
   const body = CreateExpenseBody.parse(req.body);
-  const [created] = await db
+  const [{ id }] = await db
     .insert(expensesTable)
     .values({
       vehicleId: body.vehicleId,
       category: body.category,
       amount: String(body.amount),
-      date: toDateOnly(body.date),
+      date: body.date,
       description: body.description,
     })
-    .returning();
+    .$returningId();
+  const [created] = await db
+    .select()
+    .from(expensesTable)
+    .where(eq(expensesTable.id, id))
+    .limit(1);
   res.status(201).json(CreateExpenseResponse.parse(serialize(created)));
 });
 
 router.delete("/expenses/:id", requireAuth, async (req, res) => {
   const [deleted] = await db
-    .delete(expensesTable)
+    .select()
+    .from(expensesTable)
     .where(eq(expensesTable.id, Number(req.params.id)))
-    .returning();
+    .limit(1);
   if (!deleted) {
     res.status(404).json({ error: "Expense not found" });
     return;
   }
+  await db
+    .delete(expensesTable)
+    .where(eq(expensesTable.id, Number(req.params.id)));
   res.status(204).end();
 });
 

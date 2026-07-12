@@ -1,10 +1,10 @@
 import {
-  numeric,
-  pgTable,
-  serial,
+  decimal,
+  mysqlTable,
+  int,
   text,
   timestamp,
-} from "drizzle-orm/pg-core";
+} from "drizzle-orm/mysql-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -15,19 +15,19 @@ export const vehicleStatuses = [
   "Retired",
 ] as const;
 
-export const vehiclesTable = pgTable("vehicles", {
-  id: serial("id").primaryKey(),
+export const vehiclesTable = mysqlTable("vehicles", {
+  id: int("id").primaryKey().autoincrement(),
   registrationNumber: text("registration_number").notNull().unique(),
   name: text("name").notNull(),
   type: text("type").notNull(),
-  maxLoadCapacity: numeric("max_load_capacity", {
+  maxLoadCapacity: decimal("max_load_capacity", {
     precision: 10,
     scale: 2,
   }).notNull(),
-  odometer: numeric("odometer", { precision: 12, scale: 2 })
+  odometer: decimal("odometer", { precision: 12, scale: 2 })
     .notNull()
     .default("0"),
-  acquisitionCost: numeric("acquisition_cost", {
+  acquisitionCost: decimal("acquisition_cost", {
     precision: 12,
     scale: 2,
   }).notNull(),
@@ -35,10 +35,10 @@ export const vehiclesTable = pgTable("vehicles", {
     .notNull()
     .default("Available"),
   region: text("region").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
+  createdAt: timestamp("created_at")
     .notNull()
     .defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
+  updatedAt: timestamp("updated_at")
     .notNull()
     .defaultNow()
     .$onUpdate(() => new Date()),

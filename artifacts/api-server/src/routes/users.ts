@@ -46,11 +46,15 @@ router.patch("/users/me/role", requireAuth, async (req: AuthedRequest, res) => {
     res.status(400).json({ error: "Invalid role" });
     return;
   }
-  const [updated] = await db
+  await db
     .update(usersTable)
     .set({ role: body.role })
+    .where(eq(usersTable.id, req.localUser!.id));
+  const [updated] = await db
+    .select()
+    .from(usersTable)
     .where(eq(usersTable.id, req.localUser!.id))
-    .returning();
+    .limit(1);
   const data = SetMyRoleResponse.parse(serializeUser(updated));
   res.json(data);
 });
@@ -77,11 +81,15 @@ router.patch(
       res.status(400).json({ error: "Invalid role" });
       return;
     }
-    const [updated] = await db
+    await db
       .update(usersTable)
       .set({ role: body.role })
+      .where(eq(usersTable.id, id));
+    const [updated] = await db
+      .select()
+      .from(usersTable)
       .where(eq(usersTable.id, id))
-      .returning();
+      .limit(1);
     if (!updated) {
       res.status(404).json({ error: "User not found" });
       return;

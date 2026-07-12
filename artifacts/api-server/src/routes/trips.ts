@@ -81,7 +81,7 @@ router.post("/trips", requireAuth, async (req, res) => {
     return;
   }
 
-  const [created] = await db
+  const [{ id }] = await db
     .insert(tripsTable)
     .values({
       source: body.source,
@@ -91,7 +91,12 @@ router.post("/trips", requireAuth, async (req, res) => {
       cargoWeight: String(body.cargoWeight),
       plannedDistance: String(body.plannedDistance),
     })
-    .returning();
+    .$returningId();
+  const [created] = await db
+    .select()
+    .from(tripsTable)
+    .where(eq(tripsTable.id, id))
+    .limit(1);
   res.status(201).json(CreateTripResponse.parse(serialize(created)));
 });
 
@@ -151,11 +156,11 @@ router.patch("/trips/:id", requireAuth, async (req, res) => {
   if (body.plannedDistance !== undefined)
     values.plannedDistance = String(body.plannedDistance);
 
-  const [updated] = await db
+  await db
     .update(tripsTable)
     .set(values)
-    .where(eq(tripsTable.id, id))
-    .returning();
+    .where(eq(tripsTable.id, id));
+  const [updated] = await db.select().from(tripsTable).where(eq(tripsTable.id, id)).limit(1);
   res.json(UpdateTripResponse.parse(serialize(updated)));
 });
 
@@ -223,11 +228,11 @@ router.post("/trips/:id/dispatch", requireAuth, async (req, res) => {
     return;
   }
 
-  const [updated] = await db
+  await db
     .update(tripsTable)
     .set({ status: "Dispatched", dispatchedAt: new Date() })
-    .where(eq(tripsTable.id, id))
-    .returning();
+    .where(eq(tripsTable.id, id));
+  const [updated] = await db.select().from(tripsTable).where(eq(tripsTable.id, id)).limit(1);
   await db
     .update(vehiclesTable)
     .set({ status: "On Trip" })
@@ -262,7 +267,7 @@ router.post("/trips/:id/complete", requireAuth, async (req, res) => {
     ? Math.max(0, body.finalOdometer - Number(vehicle.odometer))
     : 0;
 
-  const [updated] = await db
+  await db
     .update(tripsTable)
     .set({
       status: "Completed",
@@ -270,8 +275,8 @@ router.post("/trips/:id/complete", requireAuth, async (req, res) => {
       actualDistance: String(actualDistance),
       fuelConsumed: String(body.fuelConsumed),
     })
-    .where(eq(tripsTable.id, id))
-    .returning();
+    .where(eq(tripsTable.id, id));
+  const [updated] = await db.select().from(tripsTable).where(eq(tripsTable.id, id)).limit(1);
 
   await db
     .update(vehiclesTable)
@@ -299,11 +304,11 @@ router.post("/trips/:id/cancel", requireAuth, async (req, res) => {
     return;
   }
 
-  const [updated] = await db
+  await db
     .update(tripsTable)
     .set({ status: "Cancelled", cancelledAt: new Date() })
-    .where(eq(tripsTable.id, id))
-    .returning();
+    .where(eq(tripsTable.id, id));
+  const [updated] = await db.select().from(tripsTable).where(eq(tripsTable.id, id)).limit(1);
 
   if (trip.status === "Dispatched") {
     const [vehicle] = await db

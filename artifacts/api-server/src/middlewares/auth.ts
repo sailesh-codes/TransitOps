@@ -41,14 +41,12 @@ export async function requireAuth(
         email ||
         "New user";
 
-      const [created] = await db
+      await db
         .insert(usersTable)
         .values({ clerkUserId: userId, email, name, role: null })
-        .onConflictDoNothing({ target: usersTable.clerkUserId })
-        .returning();
+        .onDuplicateKeyUpdate({ set: { email, name } });
 
       localUser =
-        created ??
         (
           await db
             .select()

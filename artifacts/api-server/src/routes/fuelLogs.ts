@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db, fuelLogsTable, type FuelLog } from "@workspace/db";
 import {
   CreateFuelLogBody,
@@ -9,10 +9,6 @@ import {
 import { requireAuth } from "../middlewares/auth";
 
 const router: IRouter = Router();
-
-function toDateOnly(d: Date): string {
-  return d.toISOString().slice(0, 10);
-}
 
 function serialize(f: FuelLog) {
   return {
@@ -37,28 +33,37 @@ router.get("/fuel-logs", requireAuth, async (req, res) => {
 
 router.post("/fuel-logs", requireAuth, async (req, res) => {
   const body = CreateFuelLogBody.parse(req.body);
-  const [created] = await db
+  const [{ id }] = await db
     .insert(fuelLogsTable)
     .values({
       vehicleId: body.vehicleId,
       tripId: body.tripId,
       liters: String(body.liters),
       cost: String(body.cost),
-      date: toDateOnly(body.date),
+      date: body.date,
     })
-    .returning();
+    .$returningId();
+  const [created] = await db
+    .select()
+    .from(fuelLogsTable)
+    .where(eq(fuelLogsTable.id, id))
+    .limit(1);
   res.status(201).json(CreateFuelLogResponse.parse(serialize(created)));
 });
 
 router.delete("/fuel-logs/:id", requireAuth, async (req, res) => {
   const [deleted] = await db
-    .delete(fuelLogsTable)
+    .select()
+    .from(fuelLogsTable)
     .where(eq(fuelLogsTable.id, Number(req.params.id)))
-    .returning();
+    .limit(1);
   if (!deleted) {
     res.status(404).json({ error: "Fuel log not found" });
     return;
   }
+  await db
+    .delete(fuelLogsTable)
+    .where(eq(fuelLogsTable.id, Number(req.params.id)));
   res.status(204).end();
 });
 

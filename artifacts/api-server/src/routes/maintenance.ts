@@ -55,14 +55,19 @@ router.post("/maintenance-logs", requireAuth, async (req, res) => {
     return;
   }
 
-  const [created] = await db
+  const [{ id }] = await db
     .insert(maintenanceLogsTable)
     .values({
       vehicleId: body.vehicleId,
       description: body.description,
       cost: String(body.cost),
     })
-    .returning();
+    .$returningId();
+  const [created] = await db
+    .select()
+    .from(maintenanceLogsTable)
+    .where(eq(maintenanceLogsTable.id, id))
+    .limit(1);
 
   await db
     .update(vehiclesTable)
@@ -79,11 +84,15 @@ router.patch("/maintenance-logs/:id", requireAuth, async (req, res) => {
   if (body.description !== undefined) values.description = body.description;
   if (body.cost !== undefined) values.cost = String(body.cost);
 
-  const [updated] = await db
+  await db
     .update(maintenanceLogsTable)
     .set(values)
+    .where(eq(maintenanceLogsTable.id, id));
+  const [updated] = await db
+    .select()
+    .from(maintenanceLogsTable)
     .where(eq(maintenanceLogsTable.id, id))
-    .returning();
+    .limit(1);
   if (!updated) {
     res.status(404).json({ error: "Maintenance log not found" });
     return;
@@ -107,11 +116,15 @@ router.post("/maintenance-logs/:id/close", requireAuth, async (req, res) => {
     return;
   }
 
-  const [updated] = await db
+  await db
     .update(maintenanceLogsTable)
     .set({ status: "Closed", closedAt: new Date() })
+    .where(eq(maintenanceLogsTable.id, id));
+  const [updated] = await db
+    .select()
+    .from(maintenanceLogsTable)
     .where(eq(maintenanceLogsTable.id, id))
-    .returning();
+    .limit(1);
 
   const [vehicle] = await db
     .select()

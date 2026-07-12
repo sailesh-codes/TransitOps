@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { and, eq, ilike, or } from "drizzle-orm";
+import { and, eq, like, or } from "drizzle-orm";
 import { db, driversTable, type Driver } from "@workspace/db";
 import {
   CreateDriverBody,
@@ -12,10 +12,6 @@ import {
 import { requireAuth } from "../middlewares/auth";
 
 const router: IRouter = Router();
-
-function toDateOnly(d: Date): string {
-  return d.toISOString().slice(0, 10);
-}
 
 function serialize(d: Driver) {
   return {
@@ -39,8 +35,8 @@ router.get("/drivers", requireAuth, async (req, res) => {
   if (search) {
     conditions.push(
       or(
-        ilike(driversTable.name, `%${search}%`),
-        ilike(driversTable.licenseNumber, `%${search}%`),
+        like(driversTable.name, `%${search}%`),
+        like(driversTable.licenseNumber, `%${search}%`),
       ),
     );
   }
@@ -64,17 +60,22 @@ router.post("/drivers", requireAuth, async (req, res) => {
     return;
   }
 
-  const [created] = await db
+  const [{ id }] = await db
     .insert(driversTable)
     .values({
       name: body.name,
       licenseNumber: body.licenseNumber,
       licenseCategory: body.licenseCategory,
-      licenseExpiryDate: toDateOnly(body.licenseExpiryDate),
+      licenseExpiryDate: body.licenseExpiryDate,
       contactNumber: body.contactNumber,
       safetyScore: String(body.safetyScore ?? 100),
     })
-    .returning();
+    .$returningId();
+  const [created] = await db
+    .select()
+    .from(driversTable)
+    .where(eq(driversTable.id, id))
+    .limit(1);
   res.status(201).json(CreateDriverResponse.parse(serialize(created)));
 });
 
@@ -113,16 +114,20 @@ router.patch("/drivers/:id", requireAuth, async (req, res) => {
   if (body.licenseCategory !== undefined)
     values.licenseCategory = body.licenseCategory;
   if (body.licenseExpiryDate !== undefined)
-    values.licenseExpiryDate = toDateOnly(body.licenseExpiryDate);
+    values.licenseExpiryDate = body.licenseExpiryDate;
   if (body.contactNumber !== undefined) values.contactNumber = body.contactNumber;
   if (body.safetyScore !== undefined) values.safetyScore = String(body.safetyScore);
   if (body.status !== undefined) values.status = body.status;
 
-  const [updated] = await db
+  await db
     .update(driversTable)
     .set(values)
+    .where(eq(driversTable.id, id));
+  const [updated] = await db
+    .select()
+    .from(driversTable)
     .where(eq(driversTable.id, id))
-    .returning();
+    .limit(1);
   if (!updated) {
     res.status(404).json({ error: "Driver not found" });
     return;
@@ -132,13 +137,17 @@ router.patch("/drivers/:id", requireAuth, async (req, res) => {
 
 router.delete("/drivers/:id", requireAuth, async (req, res) => {
   const [deleted] = await db
-    .delete(driversTable)
+    .select()
+    .from(driversTable)
     .where(eq(driversTable.id, Number(req.params.id)))
-    .returning();
+    .limit(1);
   if (!deleted) {
     res.status(404).json({ error: "Driver not found" });
     return;
   }
+  await db
+    .delete(driversTable)
+    .where(eq(driversTable.id, Number(req.params.id)));
   res.status(204).end();
 });
 

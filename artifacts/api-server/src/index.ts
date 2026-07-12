@@ -1,11 +1,47 @@
-import app from "./app";
-import { logger } from "./lib/logger";
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const rawPort = process.env["PORT"];
+function loadEnvFile() {
+  const currentDir = path.dirname(fileURLToPath(import.meta.url));
+  const candidates = [
+    path.resolve(process.cwd(), ".env"),
+    path.resolve(currentDir, "../../../.env"),
+    path.resolve(currentDir, "../../.env"),
+  ];
+
+  for (const filePath of candidates) {
+    if (!existsSync(filePath)) continue;
+
+    for (const line of readFileSync(filePath, "utf8").split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+
+      const separatorIndex = trimmed.indexOf("=");
+      if (separatorIndex === -1) continue;
+
+      const key = trimmed.slice(0, separatorIndex).trim();
+      const rawValue = trimmed.slice(separatorIndex + 1).trim();
+      if (!key || process.env[key] !== undefined) continue;
+
+      process.env[key] = rawValue.replace(/^['"]|['"]$/g, "");
+    }
+    return;
+  }
+}
+
+loadEnvFile();
+
+const [{ default: app }, { logger }] = await Promise.all([
+  import("./app"),
+  import("./lib/logger"),
+]);
+
+const rawPort = process.env["BACKEND_PORT"] ?? "3000";
 
 if (!rawPort) {
   throw new Error(
-    "PORT environment variable is required but was not provided.",
+    "BACKEND_PORT environment variable is required but was not provided.",
   );
 }
 

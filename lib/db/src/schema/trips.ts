@@ -1,11 +1,10 @@
 import {
-  integer,
-  numeric,
-  pgTable,
-  serial,
+  int,
+  decimal,
+  mysqlTable,
   text,
   timestamp,
-} from "drizzle-orm/pg-core";
+} from "drizzle-orm/mysql-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { vehiclesTable } from "./vehicles";
@@ -18,30 +17,30 @@ export const tripStatuses = [
   "Cancelled",
 ] as const;
 
-export const tripsTable = pgTable("trips", {
-  id: serial("id").primaryKey(),
+export const tripsTable = mysqlTable("trips", {
+  id: int("id").primaryKey().autoincrement(),
   source: text("source").notNull(),
   destination: text("destination").notNull(),
-  vehicleId: integer("vehicle_id")
+  vehicleId: int("vehicle_id")
     .notNull()
     .references(() => vehiclesTable.id),
-  driverId: integer("driver_id")
+  driverId: int("driver_id")
     .notNull()
     .references(() => driversTable.id),
-  cargoWeight: numeric("cargo_weight", { precision: 10, scale: 2 }).notNull(),
-  plannedDistance: numeric("planned_distance", {
+  cargoWeight: decimal("cargo_weight", { precision: 10, scale: 2 }).notNull(),
+  plannedDistance: decimal("planned_distance", {
     precision: 10,
     scale: 2,
   }).notNull(),
   status: text("status", { enum: tripStatuses }).notNull().default("Draft"),
-  actualDistance: numeric("actual_distance", { precision: 10, scale: 2 }),
-  fuelConsumed: numeric("fuel_consumed", { precision: 10, scale: 2 }),
-  createdAt: timestamp("created_at", { withTimezone: true })
+  actualDistance: decimal("actual_distance", { precision: 10, scale: 2 }),
+  fuelConsumed: decimal("fuel_consumed", { precision: 10, scale: 2 }),
+  createdAt: timestamp("created_at")
     .notNull()
     .defaultNow(),
-  dispatchedAt: timestamp("dispatched_at", { withTimezone: true }),
-  completedAt: timestamp("completed_at", { withTimezone: true }),
-  cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+  dispatchedAt: timestamp("dispatched_at"),
+  completedAt: timestamp("completed_at"),
+  cancelledAt: timestamp("cancelled_at"),
 });
 
 export const insertTripSchema = createInsertSchema(tripsTable).omit({

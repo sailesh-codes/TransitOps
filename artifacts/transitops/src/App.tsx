@@ -21,22 +21,19 @@ import RoleSelector from '@/components/role-selector';
 
 const queryClient = new QueryClient();
 
-const clerkPubKey = publishableKeyFromHost(
-  window.location.hostname,
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
-);
-
+const rawClerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+const isDevelopmentWithoutClerk =
+  !rawClerkPubKey || rawClerkPubKey === 'pk_test_dummy_key_for_development';
+const clerkPubKey = isDevelopmentWithoutClerk
+  ? null
+  : publishableKeyFromHost(window.location.hostname, rawClerkPubKey);
 
 function stripBase(path: string): string {
   return basePath && path.startsWith(basePath)
     ? path.slice(basePath.length) || "/"
     : path;
-}
-
-if (!clerkPubKey) {
-  throw new Error('Missing VITE_CLERK_PUBLISHABLE_KEY in .env file');
 }
 
 const clerkAppearance = {
@@ -130,6 +127,7 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
 
 function ClerkProviderWithRoutes() {
   const [, setLocation] = useLocation();
+  if (!clerkPubKey) return null;
 
   return (
     <ClerkProvider
@@ -163,6 +161,30 @@ function ClerkProviderWithRoutes() {
 }
 
 function App() {
+  if (isDevelopmentWithoutClerk) {
+    return (
+      <TooltipProvider>
+        <WouterRouter base={basePath}>
+          <QueryClientProvider client={queryClient}>
+            <Switch>
+              <Route path="/" component={Landing} />
+              <Route path="/dashboard" component={() => <Layout><RoleSelector /><Dashboard /></Layout>} />
+              <Route path="/vehicles" component={() => <Layout><RoleSelector /><Vehicles /></Layout>} />
+              <Route path="/drivers" component={() => <Layout><RoleSelector /><Drivers /></Layout>} />
+              <Route path="/trips" component={() => <Layout><RoleSelector /><Trips /></Layout>} />
+              <Route path="/maintenance" component={() => <Layout><RoleSelector /><Maintenance /></Layout>} />
+              <Route path="/fuel-expenses" component={() => <Layout><RoleSelector /><FuelExpenses /></Layout>} />
+              <Route path="/reports" component={() => <Layout><RoleSelector /><Reports /></Layout>} />
+              <Route path="/team" component={() => <Layout><RoleSelector /><Team /></Layout>} />
+              <Route component={NotFound} />
+            </Switch>
+          </QueryClientProvider>
+        </WouterRouter>
+        <Toaster />
+      </TooltipProvider>
+    );
+  }
+
   return (
     <TooltipProvider>
       <WouterRouter base={basePath}>

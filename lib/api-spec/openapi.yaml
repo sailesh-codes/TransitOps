@@ -3,13 +3,31 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: TransitOps fleet operations API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: users
+    description: User profile and role management
+  - name: vehicles
+    description: Vehicle registry
+  - name: drivers
+    description: Driver management
+  - name: trips
+    description: Trip management
+  - name: maintenance
+    description: Maintenance workflow
+  - name: fuel
+    description: Fuel logs
+  - name: expenses
+    description: Expense tracking
+  - name: dashboard
+    description: Dashboard KPIs
+  - name: reports
+    description: Reports and analytics
 paths:
   /healthz:
     get:
@@ -24,6 +42,885 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /users/me:
+    get:
+      operationId: getCurrentUser
+      tags: [users]
+      summary: Get the current authenticated user's profile
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/me/role:
+    patch:
+      operationId: setMyRole
+      tags: [users]
+      summary: Set the current user's role (one-time onboarding selection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRoleInput"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "403":
+          description: Role already set
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List all users (Fleet Manager only)
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+  /users/{id}/role:
+    patch:
+      operationId: updateUserRole
+      tags: [users]
+      summary: Update a user's role (Fleet Manager only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRoleInput"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /vehicles:
+    get:
+      operationId: listVehicles
+      tags: [vehicles]
+      summary: List vehicles
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/VehicleStatus"
+        - name: region
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of vehicles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Vehicle"
+    post:
+      operationId: createVehicle
+      tags: [vehicles]
+      summary: Register a new vehicle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VehicleInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vehicle"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /vehicles/{id}:
+    get:
+      operationId: getVehicle
+      tags: [vehicles]
+      summary: Get a vehicle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Vehicle
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vehicle"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateVehicle
+      tags: [vehicles]
+      summary: Update a vehicle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VehicleUpdate"
+      responses:
+        "200":
+          description: Updated vehicle
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vehicle"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteVehicle
+      tags: [vehicles]
+      summary: Delete a vehicle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /drivers:
+    get:
+      operationId: listDrivers
+      tags: [drivers]
+      summary: List drivers
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/DriverStatus"
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of drivers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Driver"
+    post:
+      operationId: createDriver
+      tags: [drivers]
+      summary: Register a new driver
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DriverInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Driver"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /drivers/{id}:
+    get:
+      operationId: getDriver
+      tags: [drivers]
+      summary: Get a driver
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Driver
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Driver"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateDriver
+      tags: [drivers]
+      summary: Update a driver
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DriverUpdate"
+      responses:
+        "200":
+          description: Updated driver
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Driver"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteDriver
+      tags: [drivers]
+      summary: Delete a driver
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /trips:
+    get:
+      operationId: listTrips
+      tags: [trips]
+      summary: List trips
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/TripStatus"
+      responses:
+        "200":
+          description: List of trips
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Trip"
+    post:
+      operationId: createTrip
+      tags: [trips]
+      summary: Create a draft trip
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trip"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /trips/{id}:
+    get:
+      operationId: getTrip
+      tags: [trips]
+      summary: Get a trip
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Trip
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trip"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateTrip
+      tags: [trips]
+      summary: Update a draft trip
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripUpdate"
+      responses:
+        "200":
+          description: Updated trip
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trip"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteTrip
+      tags: [trips]
+      summary: Delete a draft trip
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "400":
+          description: Cannot delete a non-draft trip
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /trips/{id}/dispatch:
+    post:
+      operationId: dispatchTrip
+      tags: [trips]
+      summary: Dispatch a draft trip (validates and assigns vehicle/driver)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Dispatched trip
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trip"
+        "400":
+          description: Business rule violation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /trips/{id}/complete:
+    post:
+      operationId: completeTrip
+      tags: [trips]
+      summary: Complete a dispatched trip
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripCompleteInput"
+      responses:
+        "200":
+          description: Completed trip
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trip"
+        "400":
+          description: Business rule violation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /trips/{id}/cancel:
+    post:
+      operationId: cancelTrip
+      tags: [trips]
+      summary: Cancel a dispatched trip
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Cancelled trip
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trip"
+        "400":
+          description: Business rule violation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /maintenance-logs:
+    get:
+      operationId: listMaintenanceLogs
+      tags: [maintenance]
+      summary: List maintenance logs
+      parameters:
+        - name: vehicleId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/MaintenanceStatus"
+      responses:
+        "200":
+          description: List of maintenance logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MaintenanceLog"
+    post:
+      operationId: createMaintenanceLog
+      tags: [maintenance]
+      summary: Create a maintenance record (sets vehicle to In Shop)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MaintenanceLogInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaintenanceLog"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /maintenance-logs/{id}:
+    patch:
+      operationId: updateMaintenanceLog
+      tags: [maintenance]
+      summary: Update a maintenance record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MaintenanceLogUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaintenanceLog"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /maintenance-logs/{id}/close:
+    post:
+      operationId: closeMaintenanceLog
+      tags: [maintenance]
+      summary: Close a maintenance record (restores vehicle to Available unless retired)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Closed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaintenanceLog"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /fuel-logs:
+    get:
+      operationId: listFuelLogs
+      tags: [fuel]
+      summary: List fuel logs
+      parameters:
+        - name: vehicleId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of fuel logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FuelLog"
+    post:
+      operationId: createFuelLog
+      tags: [fuel]
+      summary: Record a fuel log
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FuelLogInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuelLog"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /fuel-logs/{id}:
+    delete:
+      operationId: deleteFuelLog
+      tags: [fuel]
+      summary: Delete a fuel log
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /expenses:
+    get:
+      operationId: listExpenses
+      tags: [expenses]
+      summary: List expenses
+      parameters:
+        - name: vehicleId
+          in: query
+          schema:
+            type: integer
+        - name: category
+          in: query
+          schema:
+            $ref: "#/components/schemas/ExpenseCategory"
+      responses:
+        "200":
+          description: List of expenses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Expense"
+    post:
+      operationId: createExpense
+      tags: [expenses]
+      summary: Record an expense
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExpenseInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Expense"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /expenses/{id}:
+    delete:
+      operationId: deleteExpense
+      tags: [expenses]
+      summary: Delete an expense
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard KPIs
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: region
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Dashboard KPIs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Get recent operational activity feed
+      responses:
+        "200":
+          description: Recent activity entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityEntry"
+
+  /reports/vehicle-costs:
+    get:
+      operationId: getVehicleCostReport
+      tags: [reports]
+      summary: Per-vehicle cost, fuel efficiency, utilization, and ROI report
+      responses:
+        "200":
+          description: Vehicle cost report rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VehicleCostReportRow"
+
+  /reports/vehicle-costs/export:
+    get:
+      operationId: exportVehicleCostReport
+      tags: [reports]
+      summary: Export the vehicle cost report as CSV
+      responses:
+        "200":
+          description: CSV file
+          content:
+            text/csv:
+              schema:
+                type: string
+
+  /reports/regions:
+    get:
+      operationId: listRegions
+      tags: [reports]
+      summary: List distinct vehicle regions for filters
+      responses:
+        "200":
+          description: Distinct regions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +931,397 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    UserRole:
+      type: string
+      enum: [fleet_manager, driver, safety_officer, financial_analyst]
+
+    User:
+      type: object
+      required: [id, clerkUserId, email, name, role, createdAt]
+      properties:
+        id: { type: integer }
+        clerkUserId: { type: string }
+        email: { type: string }
+        name: { type: string }
+        role:
+          oneOf:
+            - $ref: "#/components/schemas/UserRole"
+            - type: "null"
+        createdAt: { type: string, format: date-time }
+
+    UserRoleInput:
+      type: object
+      required: [role]
+      properties:
+        role:
+          $ref: "#/components/schemas/UserRole"
+
+    VehicleStatus:
+      type: string
+      enum: [Available, On Trip, In Shop, Retired]
+
+    Vehicle:
+      type: object
+      required:
+        [
+          id,
+          registrationNumber,
+          name,
+          type,
+          maxLoadCapacity,
+          odometer,
+          acquisitionCost,
+          status,
+          region,
+          createdAt,
+          updatedAt,
+        ]
+      properties:
+        id: { type: integer }
+        registrationNumber: { type: string }
+        name: { type: string }
+        type: { type: string }
+        maxLoadCapacity: { type: number }
+        odometer: { type: number }
+        acquisitionCost: { type: number }
+        status:
+          $ref: "#/components/schemas/VehicleStatus"
+        region: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    VehicleInput:
+      type: object
+      required:
+        [
+          registrationNumber,
+          name,
+          type,
+          maxLoadCapacity,
+          acquisitionCost,
+          region,
+        ]
+      properties:
+        registrationNumber: { type: string, minLength: 1 }
+        name: { type: string, minLength: 1 }
+        type: { type: string, minLength: 1 }
+        maxLoadCapacity: { type: number, minimum: 0 }
+        odometer: { type: number, minimum: 0 }
+        acquisitionCost: { type: number, minimum: 0 }
+        region: { type: string, minLength: 1 }
+
+    VehicleUpdate:
+      type: object
+      properties:
+        registrationNumber: { type: string, minLength: 1 }
+        name: { type: string, minLength: 1 }
+        type: { type: string, minLength: 1 }
+        maxLoadCapacity: { type: number, minimum: 0 }
+        odometer: { type: number, minimum: 0 }
+        acquisitionCost: { type: number, minimum: 0 }
+        region: { type: string, minLength: 1 }
+        status:
+          $ref: "#/components/schemas/VehicleStatus"
+
+    DriverStatus:
+      type: string
+      enum: [Available, On Trip, Off Duty, Suspended]
+
+    Driver:
+      type: object
+      required:
+        [
+          id,
+          name,
+          licenseNumber,
+          licenseCategory,
+          licenseExpiryDate,
+          contactNumber,
+          safetyScore,
+          status,
+          createdAt,
+          updatedAt,
+        ]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        licenseNumber: { type: string }
+        licenseCategory: { type: string }
+        licenseExpiryDate: { type: string, format: date }
+        contactNumber: { type: string }
+        safetyScore: { type: number }
+        status:
+          $ref: "#/components/schemas/DriverStatus"
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    DriverInput:
+      type: object
+      required:
+        [name, licenseNumber, licenseCategory, licenseExpiryDate, contactNumber]
+      properties:
+        name: { type: string, minLength: 1 }
+        licenseNumber: { type: string, minLength: 1 }
+        licenseCategory: { type: string, minLength: 1 }
+        licenseExpiryDate: { type: string, format: date }
+        contactNumber: { type: string, minLength: 1 }
+        safetyScore: { type: number, minimum: 0, maximum: 100 }
+
+    DriverUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        licenseNumber: { type: string, minLength: 1 }
+        licenseCategory: { type: string, minLength: 1 }
+        licenseExpiryDate: { type: string, format: date }
+        contactNumber: { type: string, minLength: 1 }
+        safetyScore: { type: number, minimum: 0, maximum: 100 }
+        status:
+          $ref: "#/components/schemas/DriverStatus"
+
+    TripStatus:
+      type: string
+      enum: [Draft, Dispatched, Completed, Cancelled]
+
+    Trip:
+      type: object
+      required:
+        [
+          id,
+          source,
+          destination,
+          vehicleId,
+          driverId,
+          cargoWeight,
+          plannedDistance,
+          status,
+          actualDistance,
+          fuelConsumed,
+          createdAt,
+          dispatchedAt,
+          completedAt,
+          cancelledAt,
+        ]
+      properties:
+        id: { type: integer }
+        source: { type: string }
+        destination: { type: string }
+        vehicleId: { type: integer }
+        driverId: { type: integer }
+        cargoWeight: { type: number }
+        plannedDistance: { type: number }
+        status:
+          $ref: "#/components/schemas/TripStatus"
+        actualDistance:
+          type: ["number", "null"]
+        fuelConsumed:
+          type: ["number", "null"]
+        createdAt: { type: string, format: date-time }
+        dispatchedAt:
+          type: ["string", "null"]
+          format: date-time
+        completedAt:
+          type: ["string", "null"]
+          format: date-time
+        cancelledAt:
+          type: ["string", "null"]
+          format: date-time
+
+    TripInput:
+      type: object
+      required:
+        [source, destination, vehicleId, driverId, cargoWeight, plannedDistance]
+      properties:
+        source: { type: string, minLength: 1 }
+        destination: { type: string, minLength: 1 }
+        vehicleId: { type: integer }
+        driverId: { type: integer }
+        cargoWeight: { type: number, minimum: 0 }
+        plannedDistance: { type: number, minimum: 0 }
+
+    TripUpdate:
+      type: object
+      properties:
+        source: { type: string, minLength: 1 }
+        destination: { type: string, minLength: 1 }
+        vehicleId: { type: integer }
+        driverId: { type: integer }
+        cargoWeight: { type: number, minimum: 0 }
+        plannedDistance: { type: number, minimum: 0 }
+
+    TripCompleteInput:
+      type: object
+      required: [finalOdometer, fuelConsumed]
+      properties:
+        finalOdometer: { type: number, minimum: 0 }
+        fuelConsumed: { type: number, minimum: 0 }
+
+    MaintenanceStatus:
+      type: string
+      enum: [Open, Closed]
+
+    MaintenanceLog:
+      type: object
+      required:
+        [
+          id,
+          vehicleId,
+          description,
+          cost,
+          status,
+          startedAt,
+          closedAt,
+          createdAt,
+        ]
+      properties:
+        id: { type: integer }
+        vehicleId: { type: integer }
+        description: { type: string }
+        cost: { type: number }
+        status:
+          $ref: "#/components/schemas/MaintenanceStatus"
+        startedAt: { type: string, format: date-time }
+        closedAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt: { type: string, format: date-time }
+
+    MaintenanceLogInput:
+      type: object
+      required: [vehicleId, description, cost]
+      properties:
+        vehicleId: { type: integer }
+        description: { type: string, minLength: 1 }
+        cost: { type: number, minimum: 0 }
+
+    MaintenanceLogUpdate:
+      type: object
+      properties:
+        description: { type: string, minLength: 1 }
+        cost: { type: number, minimum: 0 }
+
+    FuelLog:
+      type: object
+      required: [id, vehicleId, liters, cost, date, createdAt]
+      properties:
+        id: { type: integer }
+        vehicleId: { type: integer }
+        tripId:
+          type: ["integer", "null"]
+        liters: { type: number }
+        cost: { type: number }
+        date: { type: string, format: date }
+        createdAt: { type: string, format: date-time }
+
+    FuelLogInput:
+      type: object
+      required: [vehicleId, liters, cost, date]
+      properties:
+        vehicleId: { type: integer }
+        tripId: { type: integer }
+        liters: { type: number, minimum: 0 }
+        cost: { type: number, minimum: 0 }
+        date: { type: string, format: date }
+
+    ExpenseCategory:
+      type: string
+      enum: [Toll, Insurance, Permit, Other]
+
+    Expense:
+      type: object
+      required:
+        [id, vehicleId, category, amount, date, description, createdAt]
+      properties:
+        id: { type: integer }
+        vehicleId: { type: integer }
+        category:
+          $ref: "#/components/schemas/ExpenseCategory"
+        amount: { type: number }
+        date: { type: string, format: date }
+        description: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    ExpenseInput:
+      type: object
+      required: [vehicleId, category, amount, date, description]
+      properties:
+        vehicleId: { type: integer }
+        category:
+          $ref: "#/components/schemas/ExpenseCategory"
+        amount: { type: number, minimum: 0 }
+        date: { type: string, format: date }
+        description: { type: string, minLength: 1 }
+
+    DashboardSummary:
+      type: object
+      required:
+        [
+          activeVehicles,
+          availableVehicles,
+          vehiclesInMaintenance,
+          retiredVehicles,
+          activeTrips,
+          pendingTrips,
+          driversOnDuty,
+          fleetUtilization,
+          expiringLicenses,
+        ]
+      properties:
+        activeVehicles: { type: integer }
+        availableVehicles: { type: integer }
+        vehiclesInMaintenance: { type: integer }
+        retiredVehicles: { type: integer }
+        activeTrips: { type: integer }
+        pendingTrips: { type: integer }
+        driversOnDuty: { type: integer }
+        fleetUtilization: { type: number }
+        expiringLicenses: { type: integer }
+
+    ActivityEntry:
+      type: object
+      required: [id, type, message, timestamp]
+      properties:
+        id: { type: string }
+        type: { type: string }
+        message: { type: string }
+        timestamp: { type: string, format: date-time }
+
+    VehicleCostReportRow:
+      type: object
+      required:
+        [
+          vehicleId,
+          registrationNumber,
+          name,
+          totalDistance,
+          totalFuelLiters,
+          fuelEfficiency,
+          fuelCost,
+          maintenanceCost,
+          expenseCost,
+          totalOperationalCost,
+          revenue,
+          roi,
+        ]
+      properties:
+        vehicleId: { type: integer }
+        registrationNumber: { type: string }
+        name: { type: string }
+        totalDistance: { type: number }
+        totalFuelLiters: { type: number }
+        fuelEfficiency:
+          type: ["number", "null"]
+        fuelCost: { type: number }
+        maintenanceCost: { type: number }
+        expenseCost: { type: number }
+        totalOperationalCost: { type: number }
+        revenue: { type: number }
+        roi:
+          type: ["number", "null"]

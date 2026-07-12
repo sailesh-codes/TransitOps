@@ -145,7 +145,7 @@ export default function Maintenance() {
                     <TableRow key={log.id}>
                       <TableCell className="font-medium">V-{log.vehicleId}</TableCell>
                       <TableCell className="max-w-[250px] truncate" title={log.description}>{log.description}</TableCell>
-                      <TableCell>${log.cost.toLocaleString()}</TableCell>
+                      <TableCell>₹{log.cost.toLocaleString()}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">{format(new Date(log.startedAt), "MMM dd, yyyy")}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">
                         {log.closedAt ? format(new Date(log.closedAt), "MMM dd, yyyy") : "-"}
@@ -225,7 +225,7 @@ export default function Maintenance() {
                 name="cost"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Estimated/Actual Cost ($)</FormLabel>
+                    <FormLabel>Estimated/Actual Cost (₹)</FormLabel>
                     <FormControl>
                       <Input type="number" step="0.01" {...field} />
                     </FormControl>

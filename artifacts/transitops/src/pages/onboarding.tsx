@@ -189,7 +189,7 @@ export default function Onboarding() {
           <RadioGroup
             value={selectedRole}
             onValueChange={(v) => setSelectedRole(v as UserRole)}
-            className="grid gap-3 sm:grid-cols-2"
+            className="grid gap-4 sm:grid-cols-2"
           >
             {ROLE_OPTIONS.map((opt) => {
               const Icon = opt.icon;
@@ -197,42 +197,42 @@ export default function Onboarding() {
                 <label
                   key={opt.value}
                   htmlFor={`role-${opt.value}`}
-                  className="flex cursor-pointer items-start gap-3 rounded-lg border bg-card p-4 transition-colors hover:border-primary/50 hover:bg-accent/50 has-[:checked]:border-primary has-[:checked]:bg-primary/5 has-[:checked]:ring-1 has-[:checked]:ring-primary"
+                  className="group flex cursor-pointer flex-col gap-4 rounded-3xl border-2 border-border bg-card p-6 transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 has-[:checked]:border-primary has-[:checked]:bg-blue-50/50 has-[:checked]:shadow-lg has-[:checked]:shadow-primary/10"
                 >
-                  <RadioGroupItem
-                    value={opt.value}
-                    id={`role-${opt.value}`}
-                    className="mt-1"
-                  />
-                  <div className="flex flex-1 flex-col gap-1">
-                    <div className="flex items-center gap-2">
-                      <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary">
-                        <Icon className="h-4 w-4" />
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors group-hover:bg-primary/20 group-has-[:checked]:bg-primary group-has-[:checked]:text-primary-foreground">
+                        <Icon className="h-6 w-6" />
                       </span>
-                      <span className="font-semibold">{opt.label}</span>
+                      <span className="font-bold text-lg">{opt.label}</span>
                     </div>
-                    <span className="text-sm text-muted-foreground">
-                      {opt.description}
-                    </span>
+                    <RadioGroupItem
+                      value={opt.value}
+                      id={`role-${opt.value}`}
+                      className="mt-0 border-2"
+                    />
                   </div>
+                  <span className="text-sm text-muted-foreground leading-relaxed pl-16 -mt-3">
+                    {opt.description}
+                  </span>
                 </label>
               );
             })}
           </RadioGroup>
 
-          <div className="flex flex-col items-center gap-3 pt-2">
+          <div className="flex flex-col items-center gap-4 pt-6">
             <Button
               size="lg"
               onClick={handleSetRole}
               disabled={!selectedRole || setRole.isPending}
-              className="h-12 w-full sm:w-auto sm:px-8"
+              className="h-14 w-full sm:w-auto sm:px-12 rounded-full text-base font-bold shadow-md transition-all hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-0.5"
             >
               {setRole.isPending ? (
                 "Saving…"
               ) : (
                 <>
                   Continue to Dashboard
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <ArrowRight className="ml-2 h-5 w-5" />
                 </>
               )}
             </Button>

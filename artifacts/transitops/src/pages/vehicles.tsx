@@ -377,7 +377,7 @@ export default function Vehicles() {
                   name="acquisitionCost"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Cost ($)</FormLabel>
+                      <FormLabel>Cost (₹)</FormLabel>
                       <FormControl>
                         <Input type="number" step="0.01" {...field} />
                       </FormControl>

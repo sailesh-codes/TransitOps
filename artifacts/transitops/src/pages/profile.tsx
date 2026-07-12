@@ -34,9 +34,11 @@ import {
 } from "lucide-react";
 
 function getRoleBadge(role: UserRole | null | undefined) {
+  const baseClass = "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm transition-transform hover:scale-105 cursor-default";
+  
   if (!role) {
     return (
-      <Badge variant="outline" className="bg-gray-50 text-gray-500">
+      <Badge variant="outline" className={`bg-slate-100 text-slate-500 border-slate-200 ${baseClass}`}>
         Unassigned
       </Badge>
     );
@@ -44,42 +46,30 @@ function getRoleBadge(role: UserRole | null | undefined) {
   switch (role) {
     case "fleet_manager":
       return (
-        <Badge
-          variant="outline"
-          className="bg-purple-50 text-purple-700 border-purple-200"
-        >
+        <Badge variant="outline" className={`bg-indigo-100 text-indigo-700 border-indigo-200 ${baseClass}`}>
           Fleet Manager
         </Badge>
       );
     case "safety_officer":
       return (
-        <Badge
-          variant="outline"
-          className="bg-blue-50 text-blue-700 border-blue-200"
-        >
+        <Badge variant="outline" className={`bg-blue-100 text-blue-700 border-blue-200 ${baseClass}`}>
           Safety Officer
         </Badge>
       );
     case "financial_analyst":
       return (
-        <Badge
-          variant="outline"
-          className="bg-amber-50 text-amber-700 border-amber-200"
-        >
+        <Badge variant="outline" className={`bg-amber-100 text-amber-700 border-amber-200 ${baseClass}`}>
           Financial Analyst
         </Badge>
       );
     case "driver":
       return (
-        <Badge
-          variant="outline"
-          className="bg-green-50 text-green-700 border-green-200"
-        >
+        <Badge variant="outline" className={`bg-emerald-100 text-emerald-700 border-emerald-200 ${baseClass}`}>
           Driver
         </Badge>
       );
     default:
-      return <Badge variant="outline">{role}</Badge>;
+      return <Badge variant="outline" className={baseClass}>{role}</Badge>;
   }
 }
 
@@ -140,19 +130,21 @@ export default function Profile() {
   };
 
   return (
-    <div className="flex-1 space-y-6">
+    <div className="flex-1 space-y-8 max-w-4xl mx-auto w-full pt-4">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Profile</h2>
-        <p className="text-muted-foreground">
-          Your account details and role.
+        <h2 className="text-4xl font-extrabold tracking-tight text-slate-800">Your Profile</h2>
+        <p className="text-muted-foreground mt-2 text-base">
+          Manage your account details and role permissions.
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <UserCircle className="h-5 w-5 text-muted-foreground" />
-            <CardTitle>Account</CardTitle>
+      <Card className="overflow-hidden border-blue-100/50 shadow-md">
+        <CardHeader className="bg-blue-50/50 border-b border-blue-100/50 pb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-xl">
+              <UserCircle className="h-6 w-6 text-blue-600" />
+            </div>
+            <CardTitle className="text-xl">Account Identity</CardTitle>
           </div>
           <CardDescription>
             Your identity in TransitOps. Managed by Clerk.
@@ -185,11 +177,13 @@ export default function Profile() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 text-muted-foreground" />
-            <CardTitle>Role</CardTitle>
+      <Card className="overflow-hidden border-blue-100/50 shadow-md">
+        <CardHeader className="bg-slate-50/50 border-b border-slate-100/50 pb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-slate-200/50 rounded-xl">
+              <ShieldCheck className="h-6 w-6 text-slate-700" />
+            </div>
+            <CardTitle className="text-xl">Role & Permissions</CardTitle>
           </div>
           <CardDescription>
             Your role determines which pages and actions are available to you.
@@ -245,10 +239,10 @@ export default function Profile() {
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
-        <Button variant="outline" onClick={handleSignOut}>
+      <div className="flex justify-end pt-4">
+        <Button variant="destructive" onClick={handleSignOut} className="rounded-xl shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 px-6">
           <LogOut className="mr-2 h-4 w-4" />
-          Sign Out
+          Sign Out Securely
         </Button>
       </div>
     </div>

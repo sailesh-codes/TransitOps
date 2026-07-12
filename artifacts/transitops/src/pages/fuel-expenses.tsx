@@ -197,7 +197,7 @@ export default function FuelExpenses() {
                           <TableCell className="font-medium">V-{log.vehicleId}</TableCell>
                           <TableCell className="text-muted-foreground">{log.tripId ? `T-${log.tripId}` : "-"}</TableCell>
                           <TableCell>{log.liters} L</TableCell>
-                          <TableCell>${log.cost.toLocaleString()}</TableCell>
+                          <TableCell>₹{log.cost.toLocaleString()}</TableCell>
                           <TableCell className="text-right">
                             <Button variant="ghost" size="icon" onClick={() => handleDeleteFuel(log.id)}>
                               <Trash2 className="h-4 w-4 text-destructive" />
@@ -249,7 +249,7 @@ export default function FuelExpenses() {
                           <TableCell className="font-medium">V-{exp.vehicleId}</TableCell>
                           <TableCell className="capitalize">{exp.category.replace('_', ' ')}</TableCell>
                           <TableCell className="max-w-[200px] truncate" title={exp.description}>{exp.description}</TableCell>
-                          <TableCell>${exp.amount.toLocaleString()}</TableCell>
+                          <TableCell>₹{exp.amount.toLocaleString()}</TableCell>
                           <TableCell className="text-right">
                             <Button variant="ghost" size="icon" onClick={() => handleDeleteExpense(exp.id)}>
                               <Trash2 className="h-4 w-4 text-destructive" />
@@ -324,7 +324,7 @@ export default function FuelExpenses() {
                   name="cost"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Cost ($)</FormLabel>
+                      <FormLabel>Cost (₹)</FormLabel>
                       <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -414,7 +414,7 @@ export default function FuelExpenses() {
                   name="amount"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Amount ($)</FormLabel>
+                      <FormLabel>Amount (₹)</FormLabel>
                       <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>

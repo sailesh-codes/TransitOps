@@ -106,88 +106,88 @@ export default function Dashboard() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Available Vehicles</CardTitle>
+              <CardTitle className="text-base font-bold text-muted-foreground">Available Vehicles</CardTitle>
               <CheckCircle2 className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{summary?.availableVehicles || 0}</div>
+              <div className="text-4xl font-extrabold tracking-tight text-foreground">{summary?.availableVehicles || 0}</div>
               <p className="text-xs text-muted-foreground mt-1">Ready for dispatch</p>
             </CardContent>
           </Card>
           
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Vehicles</CardTitle>
+              <CardTitle className="text-base font-bold text-muted-foreground">Active Vehicles</CardTitle>
               <Truck className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{summary?.activeVehicles || 0}</div>
+              <div className="text-4xl font-extrabold tracking-tight text-foreground">{summary?.activeVehicles || 0}</div>
               <p className="text-xs text-muted-foreground mt-1">Currently on trips</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">In Maintenance</CardTitle>
+              <CardTitle className="text-base font-bold text-muted-foreground">In Maintenance</CardTitle>
               <Wrench className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{summary?.vehiclesInMaintenance || 0}</div>
+              <div className="text-4xl font-extrabold tracking-tight text-foreground">{summary?.vehiclesInMaintenance || 0}</div>
               <p className="text-xs text-muted-foreground mt-1">Out of service</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Fleet Utilization</CardTitle>
+              <CardTitle className="text-base font-bold text-muted-foreground">Fleet Utilization</CardTitle>
               <Activity className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{summary?.fleetUtilization || 0}%</div>
+              <div className="text-4xl font-extrabold tracking-tight text-foreground">{summary?.fleetUtilization || 0}%</div>
               <p className="text-xs text-muted-foreground mt-1">Active / Total (usable)</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Trips</CardTitle>
+              <CardTitle className="text-base font-bold text-muted-foreground">Active Trips</CardTitle>
               <Map className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{summary?.activeTrips || 0}</div>
+              <div className="text-4xl font-extrabold tracking-tight text-foreground">{summary?.activeTrips || 0}</div>
               <p className="text-xs text-muted-foreground mt-1">Trips in progress</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Trips</CardTitle>
+              <CardTitle className="text-base font-bold text-muted-foreground">Pending Trips</CardTitle>
               <Clock className="h-4 w-4 text-yellow-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{summary?.pendingTrips || 0}</div>
+              <div className="text-4xl font-extrabold tracking-tight text-foreground">{summary?.pendingTrips || 0}</div>
               <p className="text-xs text-muted-foreground mt-1">Awaiting dispatch</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Drivers On Duty</CardTitle>
+              <CardTitle className="text-base font-bold text-muted-foreground">Drivers On Duty</CardTitle>
               <Users className="h-4 w-4 text-indigo-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{summary?.driversOnDuty || 0}</div>
+              <div className="text-4xl font-extrabold tracking-tight text-foreground">{summary?.driversOnDuty || 0}</div>
               <p className="text-xs text-muted-foreground mt-1">Currently driving</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Expiring Licenses</CardTitle>
+              <CardTitle className="text-base font-bold text-muted-foreground">Expiring Licenses</CardTitle>
               <AlertTriangle className={`h-4 w-4 ${summary?.expiringLicenses ? "text-red-500" : "text-muted-foreground"}`} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{summary?.expiringLicenses || 0}</div>
+              <div className="text-4xl font-extrabold tracking-tight text-foreground">{summary?.expiringLicenses || 0}</div>
               <p className="text-xs text-muted-foreground mt-1">Within 30 days</p>
             </CardContent>
           </Card>
